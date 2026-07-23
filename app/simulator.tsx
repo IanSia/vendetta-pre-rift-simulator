@@ -482,10 +482,12 @@ function DeckBuilder({
 export function Simulator({
   cards,
   initialSeed,
+  landingShowcaseIds,
   sourceUpdatedAt,
 }: {
   cards: CardDefinition[];
   initialSeed: string;
+  landingShowcaseIds: [string, string];
   sourceUpdatedAt: string;
 }) {
   const [seed, setSeed] = useState(initialSeed);
@@ -497,6 +499,9 @@ export function Simulator({
   const [shareLabel, setShareLabel] = useState("Share seed");
   const pointerStart = useRef<number | null>(null);
   const cardsById = useMemo(() => cardMap(cards), [cards]);
+  const landingShowcases = landingShowcaseIds
+    .map((id) => cardsById.get(id))
+    .filter((card): card is CardDefinition => Boolean(card));
   const session = useMemo(() => generateKit(cards, seed), [cards, seed]);
 
   useEffect(() => {
@@ -556,7 +561,7 @@ export function Simulator({
       {phase === "intro" ? (
         <section className="intro-stage">
           <div className="intro-copy"><p className="eyebrow">Vendetta · Pre-Rift</p><h1>Crack the kit.<br /><em>Build what survives.</em></h1><p>One random champion path. Five independently randomized boosters. Then a legal 25-card deck forged from exactly what you opened.</p><div className="intro-actions"><button className="primary-button" onClick={primary} type="button">Break the seal <span>→</span></button><button className="text-button" onClick={() => setMethodOpen(true)} type="button">See the modeled odds</button></div><div className="kit-contents"><span><strong>09</strong> Champions</span><span><strong>15</strong> Seeded cards</span><span><strong>05</strong> Boosters</span><span><strong>25</strong> Card deck</span></div></div>
-          <div className="kit-visual" aria-hidden="true"><div className="box-back"><span>Riftbound</span></div><div className="box-front"><i>Pre-Rift</i><strong>Vendetta</strong><small>Sealed kit simulator</small></div><div className="box-card card-one" /><div className="box-card card-two" /><Image className="intro-booster" src="/vendetta-booster-pack.webp" alt="" width={765} height={1244} priority /></div>
+          <div className="kit-visual" aria-hidden="true"><Image className="landing-pack landing-pack-left" src="/vendetta-booster-pack.webp" alt="" width={765} height={1244} priority /><Image className="landing-pack landing-pack-center" src="/vendetta-booster-pack.webp" alt="" width={765} height={1244} priority />{landingShowcases.map((card, index) => <Image className={`box-card ${index === 0 ? "card-one" : "card-two"}`} src={card.imagePath} alt="" width={744} height={1039} key={card.id} priority />)}<Image className="intro-booster" src="/vendetta-booster-pack.webp" alt="" width={765} height={1244} priority /></div>
         </section>
       ) : null}
 

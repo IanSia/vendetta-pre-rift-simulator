@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import manifest from "@/data/vendetta-cards.json";
 import sourceMetadata from "@/data/source-metadata.json";
 import { Simulator } from "./simulator";
@@ -19,10 +19,22 @@ export default async function Home({
   searchParams: Promise<{ seed?: string }>;
 }) {
   const params = await searchParams;
+  const cards = manifest.cards as CardDefinition[];
+  const overnumbers = cards.filter((card) => card.treatment === "overnumber");
+  const firstShowcaseIndex = randomInt(overnumbers.length);
+  const secondShowcaseOffset = randomInt(overnumbers.length - 1);
+  const secondShowcaseIndex = secondShowcaseOffset >= firstShowcaseIndex
+    ? secondShowcaseOffset + 1
+    : secondShowcaseOffset;
+
   return (
     <Simulator
-      cards={manifest.cards as CardDefinition[]}
+      cards={cards}
       initialSeed={params.seed?.slice(0, 80) || randomUUID().slice(0, 12)}
+      landingShowcaseIds={[
+        overnumbers[firstShowcaseIndex].id,
+        overnumbers[secondShowcaseIndex].id,
+      ]}
       sourceUpdatedAt={sourceMetadata.sourceUpdatedAt}
     />
   );
