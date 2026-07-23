@@ -241,7 +241,12 @@ footer a { color: #8a8d88; font-size: 8px; text-decoration: none; }.footer a:hov
   .action-dock { min-height: 92px; padding: 11px 15px; }.action-dock > span { display: none; }.action-dock > div { width: 100%; }.action-dock button { flex: 1; padding-inline: 10px; }
   .pool-view,.builder-view { padding: 45px 15px 80px; }.section-heading,.builder-heading { align-items: flex-start; flex-direction: column; }.section-heading h1,.builder-heading h1 { font-size: 37px; }.pool-stats { width: 100%; overflow: auto; }.pool-stats span { flex: 1; }.pool-toolbar { align-items: stretch; flex-direction: column; }.pool-toolbar input { width: 100%; border-left: 0; border-top: 1px solid var(--line); }.pool-grid { grid-template-columns: repeat(4, 1fr); }
   .builder-layout { grid-template-columns: 1fr; }.deck-columns { grid-template-columns: 1fr; }.column-heading > span { display: none; }
-  .card-modal { grid-template-columns: 1fr; width: min(480px, 94vw); padding: 18px; }.card-modal > .card-art { width: min(70vw, 300px); margin: 0 auto; }.card-details { padding: 10px 3px; }.modal-close { right: 3px; }.method-grid { grid-template-columns: 1fr; }
+  .modal-backdrop { padding: 12px; }
+  .card-modal { grid-template-columns: minmax(0, 1fr); width: 100%; max-width: 480px; max-height: calc(100dvh - 24px); gap: 18px; padding: 56px 16px 20px; }
+  .card-modal > .card-art { width: min(100%, 300px); margin-inline: auto; }
+  .card-details { width: 100%; padding: 10px 0 4px; }
+  .modal-close { top: 10px; right: 10px; width: 44px; height: 44px; }
+  .method-grid { grid-template-columns: 1fr; }
   footer { align-items: flex-start; flex-direction: column; }footer div { flex-wrap: wrap; }
 }
 

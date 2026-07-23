@@ -133,11 +133,11 @@ function CardModal({
         aria-label={`${card.name} card details`}
         onMouseDown={(event) => event.stopPropagation()}
       >
+        <button className="icon-button modal-close" onClick={onClose} type="button">
+          ×<span className="sr-only">Close</span>
+        </button>
         <CardArt card={card} pull={pull} promo={promo} />
         <div className="card-details">
-          <button className="icon-button modal-close" onClick={onClose} type="button">
-            ×<span className="sr-only">Close</span>
-          </button>
           <p className="eyebrow">{card.publicCode} · {titleCase(card.rarity)}</p>
           <h2>{promo ? "Riven · Pre-Rift Promo" : card.name}</h2>
           <div className="detail-tags">
