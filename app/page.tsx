@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { randomUUID } from "node:crypto";
 import manifest from "@/data/vendetta-cards.json";
 import sourceMetadata from "@/data/source-metadata.json";
 import { Simulator } from "./simulator";
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
     "Open a simulated Vendetta Pre-Rift kit, then build and validate a legal 25-card sealed deck.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Home({
   searchParams,
 }: {
@@ -19,7 +22,7 @@ export default async function Home({
   return (
     <Simulator
       cards={manifest.cards as CardDefinition[]}
-      initialSeed={params.seed?.slice(0, 80) || ""}
+      initialSeed={params.seed?.slice(0, 80) || randomUUID().slice(0, 12)}
       sourceUpdatedAt={sourceMetadata.sourceUpdatedAt}
     />
   );

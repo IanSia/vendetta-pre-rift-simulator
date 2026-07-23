@@ -51,14 +51,27 @@ test("kit and booster slot counts match official collation", () => {
     assert.equal(pack.filter((pull) => pull.slot.startsWith("rare-or-better")).length, 2);
     assert.equal(pack.filter((pull) => pull.slot === "foil").length, 1);
     assert.equal(pack.filter((pull) => pull.slot === "token-or-rune").length, 1);
+    const mechanicalIds = pack.map(
+      (pull) => cardsById.get(pull.cardId)!.mechanicalId,
+    );
+    assert.equal(
+      new Set(mechanicalIds).size,
+      mechanicalIds.length,
+      "a physical booster must not repeat the same mechanical card",
+    );
   }
 });
 
 test("nine champion packs remain reachable and structurally valid", () => {
   const seen = new Set<string>();
+  const presetByTheme = new Map<string, string[]>();
   for (let index = 0; index < 500 && seen.size < SEEDED_THEMES.length; index += 1) {
     const kit = generateKit(cards, `theme-${index}`);
     seen.add(kit.theme.id);
+    const presetIds = kit.seededPack.map((pull) => pull.cardId);
+    const previousPreset = presetByTheme.get(kit.theme.id);
+    if (previousPreset) assert.deepEqual(presetIds, previousPreset);
+    else presetByTheme.set(kit.theme.id, presetIds);
     const packCards = kit.seededPack.map((pull) => cardsById.get(pull.cardId)!);
     assert.ok(packCards[0].types.includes("legend"));
     assert.ok(packCards[1].isChampion);

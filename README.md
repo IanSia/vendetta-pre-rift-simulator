@@ -2,6 +2,8 @@
 
 An unofficial, noncommercial simulator for opening a Vendetta Pre-Rift kit and building a legal 25-card sealed deck from the result.
 
+Each fresh visit rolls one of nine preset Champion packs and five independently randomized boosters. Shared seed URLs replay an opening exactly. Individual boosters do not repeat the same mechanical card, while copies can still appear across different boosters.
+
 ## Run locally
 
 ```bash

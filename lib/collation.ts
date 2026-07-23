@@ -174,17 +174,30 @@ export function rollRareSlotTreatment(random: RandomSource) {
   return treatment;
 }
 
-function rareSlot(random: RandomSource, cards: CardDefinition[]) {
+function rareSlot(
+  random: RandomSource,
+  cards: CardDefinition[],
+  excludedMechanicalIds: ReadonlySet<string>,
+) {
   const treatment = rollRareSlotTreatment(random);
   const pool =
     treatment === "alt"
       ? cards.filter(
-          (card) => card.treatment === "alt" || card.treatment === "special-alt",
+          (card) =>
+            (card.treatment === "alt" || card.treatment === "special-alt") &&
+            !excludedMechanicalIds.has(card.mechanicalId),
         )
       : treatment === "overnumber"
-        ? cards.filter((card) => card.treatment === "overnumber")
+        ? cards.filter(
+            (card) =>
+              card.treatment === "overnumber" &&
+              !excludedMechanicalIds.has(card.mechanicalId),
+          )
         : cards.filter(
-            (card) => card.treatment === "base" && card.rarity === treatment,
+            (card) =>
+              card.treatment === "base" &&
+              card.rarity === treatment &&
+              !excludedMechanicalIds.has(card.mechanicalId),
           );
   return {
     card: random.pick(pool),
@@ -201,12 +214,14 @@ function generateBooster(
   packIndex: number,
 ) {
   const pulls: CardPull[] = [];
+  const usedMechanicalIds = new Set<string>();
   let uidIndex = 0;
   const add = (
     card: CardDefinition,
     slot: string,
     options: Partial<CardPull> = {},
   ) => {
+    usedMechanicalIds.add(card.mechanicalId);
     pulls.push(
       makePull(
         card,
@@ -238,11 +253,15 @@ function generateBooster(
   );
   add(random.pick(tokenPool), "token-or-rune");
 
-  const foilPool = cards.filter((card) => card.treatment === "base");
+  const foilPool = cards.filter(
+    (card) =>
+      card.treatment === "base" &&
+      !usedMechanicalIds.has(card.mechanicalId),
+  );
   add(random.pick(foilPool), "foil", { foil: true });
 
   for (let slot = 0; slot < COLLATION_CONFIG.official.rareOrBetter; slot += 1) {
-    const result = rareSlot(random, cards);
+    const result = rareSlot(random, cards, usedMechanicalIds);
     add(result.card, `rare-or-better-${slot + 1}`, {
       signed: result.signed,
     });
@@ -250,11 +269,8 @@ function generateBooster(
   return pulls;
 }
 
-function generateSeededPack(
-  random: RandomSource,
-  cards: CardDefinition[],
-  theme: SeededTheme,
-) {
+function generateSeededPack(cards: CardDefinition[], theme: SeededTheme) {
+  const presetRandom = createRandom(`vendetta-seeded-${theme.id}-v1`);
   const byId = new Map(cards.map((card) => [card.id, card]));
   const legend = byId.get(theme.legendId);
   const champion = byId.get(theme.championId);
@@ -266,7 +282,7 @@ function generateSeededPack(
         card.types.includes("battlefield") &&
         card.name === theme.battlefield,
     ) ||
-    random.pick(
+    presetRandom.pick(
       cards.filter(
         (card) => card.treatment === "base" && card.types.includes("battlefield"),
       ),
@@ -284,7 +300,7 @@ function generateSeededPack(
   const remaining = [...supportPool];
   while (support.length < 12 && remaining.length) {
     const chosen = weightedPick(
-      random,
+      presetRandom,
       remaining.map((card) => {
         const searchable = `${card.name} ${card.text} ${card.keywords.join(" ")}`.toLowerCase();
         const synergy = theme.keywords.filter((word) => searchable.includes(word)).length;
@@ -308,7 +324,7 @@ function generateSeededPack(
 export function generateKit(cards: CardDefinition[], seed: string): KitSession {
   const random = createRandom(seed);
   const theme = random.pick(SEEDED_THEMES);
-  const seededPack = generateSeededPack(random, cards, theme);
+  const seededPack = generateSeededPack(cards, theme);
   const packs = Array.from({ length: 5 }, (_, index) =>
     generateBooster(random, cards, index + 1),
   );

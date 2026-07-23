@@ -22,7 +22,7 @@ import type {
   KitSession,
 } from "@/lib/types";
 
-type Phase = "intro" | "promo" | "seeded" | "pack" | "pool" | "builder";
+type Phase = "intro" | "seeded" | "pack" | "pool" | "builder";
 
 const RARITY_ORDER = { common: 0, uncommon: 1, rare: 2, epic: 3 };
 
@@ -174,9 +174,10 @@ function Methodology({ onClose, updatedAt }: { onClose: () => void; updatedAt: s
             <span className="status-dot official" />
             <h3>Official facts</h3>
             <ul>
-              <li>One Riven promo, one random 15-card champion pack, and five Vendetta boosters.</li>
+              <li>One random 15-card champion pack and five randomized Vendetta boosters.</li>
               <li>Each champion pack guarantees its Legend, Rare Champion, one Battlefield, and 12 support cards.</li>
               <li>Each booster has 7 Commons, 3 Uncommons, 2 rare-or-better cards, 1 foil, and 1 token/rune slot.</li>
+              <li>A booster never repeats the same mechanical card; different boosters can still produce additional copies.</li>
             </ul>
           </article>
           <article>
@@ -197,8 +198,8 @@ function Methodology({ onClose, updatedAt }: { onClose: () => void; updatedAt: s
 }
 
 function Progress({ phase, packIndex }: { phase: Phase; packIndex: number }) {
-  const current = phase === "intro" ? 0 : phase === "promo" ? 1 : phase === "seeded" ? 2 : phase === "pack" ? 3 + packIndex : phase === "pool" ? 8 : 9;
-  const steps = ["Kit", "Promo", "Champion", "1", "2", "3", "4", "5", "Pool", "Deck"];
+  const current = phase === "intro" ? 0 : phase === "seeded" ? 1 : phase === "pack" ? 2 + packIndex : phase === "pool" ? 7 : 8;
+  const steps = ["Kit", "Champion", "1", "2", "3", "4", "5", "Pool", "Deck"];
   return (
     <ol className="progress" aria-label="Opening progress">
       {steps.map((label, index) => (
@@ -243,6 +244,8 @@ function OpeningStage({
   revealed,
   cardsById,
   onZoom,
+  featuredPull,
+  singleReveal = false,
 }: {
   kicker: string;
   title: string;
@@ -251,11 +254,13 @@ function OpeningStage({
   revealed: number;
   cardsById: Map<string, CardDefinition>;
   onZoom: (pull: CardPull) => void;
+  featuredPull?: CardPull;
+  singleReveal?: boolean;
 }) {
-  const current = revealed > 0 ? pulls[revealed - 1] : undefined;
+  const current = revealed > 0 ? featuredPull || pulls[revealed - 1] : undefined;
   const card = pullCard(current, cardsById);
   return (
-    <section className="opening-stage">
+    <section className={`opening-stage${singleReveal ? " single-reveal" : ""}`}>
       <div className="opening-copy">
         <p className="eyebrow">{kicker}</p>
         <h1>{title}</h1>
@@ -275,7 +280,7 @@ function OpeningStage({
           </div>
         ) : <FacedownCard label={kicker} />}
       </div>
-      <RevealGallery pulls={pulls} revealed={revealed} cardsById={cardsById} onZoom={onZoom} />
+      {!singleReveal ? <RevealGallery pulls={pulls} revealed={revealed} cardsById={cardsById} onZoom={onZoom} /> : null}
     </section>
   );
 }
@@ -461,7 +466,7 @@ export function Simulator({
   initialSeed: string;
   sourceUpdatedAt: string;
 }) {
-  const [seed, setSeed] = useState(initialSeed || "vendetta-open");
+  const [seed, setSeed] = useState(initialSeed);
   const [phase, setPhase] = useState<Phase>("intro");
   const [packIndex, setPackIndex] = useState(0);
   const [revealed, setRevealed] = useState(0);
@@ -480,9 +485,8 @@ export function Simulator({
   }, [seed]);
 
   const primary = useCallback(() => {
-    if (phase === "intro") { setPhase("promo"); setRevealed(0); return; }
-    if (phase === "promo") { if (!revealed) setRevealed(1); else { setPhase("seeded"); setRevealed(0); } return; }
-    if (phase === "seeded") { if (revealed < session.seededPack.length) setRevealed((value) => value + 1); else { setPhase("pack"); setPackIndex(0); setRevealed(0); } return; }
+    if (phase === "intro") { setPhase("seeded"); setRevealed(0); return; }
+    if (phase === "seeded") { if (!revealed) setRevealed(session.seededPack.length); else { setPhase("pack"); setPackIndex(0); setRevealed(0); } return; }
     if (phase === "pack") { const pulls = session.packs[packIndex]; if (revealed < pulls.length) setRevealed((value) => value + 1); else if (packIndex < 4) { setPackIndex((value) => value + 1); setRevealed(0); } else { setPhase("pool"); setRevealed(0); } return; }
     if (phase === "pool") setPhase("builder");
   }, [packIndex, phase, revealed, session.packs, session.seededPack.length]);
@@ -506,8 +510,8 @@ export function Simulator({
   };
   const zoomPull = (pull: CardPull) => { const card = cardsById.get(pull.cardId); if (card) setZoomed({ pull, card }); };
   const currentPulls = phase === "seeded" ? session.seededPack : phase === "pack" ? session.packs[packIndex] : [];
-  const stageComplete = (phase === "promo" && revealed === 1) || ((phase === "seeded" || phase === "pack") && revealed === currentPulls.length);
-  const buttonLabel = phase === "intro" ? "Break the seal" : phase === "promo" ? revealed ? "Open champion pack" : "Reveal promo" : phase === "seeded" ? stageComplete ? "Start booster one" : `Reveal card ${revealed + 1}` : phase === "pack" ? stageComplete ? packIndex < 4 ? `Open booster ${packIndex + 2}` : "Review sealed pool" : `Reveal card ${revealed + 1}` : phase === "pool" ? "Forge my 25-card deck" : "";
+  const stageComplete = (phase === "seeded" || phase === "pack") && revealed === currentPulls.length;
+  const buttonLabel = phase === "intro" ? "Break the seal" : phase === "seeded" ? stageComplete ? "Start booster one" : "Reveal random champion" : phase === "pack" ? stageComplete ? packIndex < 4 ? `Open booster ${packIndex + 2}` : "Review sealed pool" : `Reveal card ${revealed + 1}` : phase === "pool" ? "Forge my 25-card deck" : "";
 
   return (
     <main
@@ -529,25 +533,17 @@ export function Simulator({
 
       {phase === "intro" ? (
         <section className="intro-stage">
-          <div className="intro-copy"><p className="eyebrow">Vendetta · Pre-Rift</p><h1>Crack the kit.<br /><em>Build what survives.</em></h1><p>One stamped Riven. One of nine champion packs. Five boosters. Then a legal 25-card deck forged from exactly what you opened.</p><div className="intro-actions"><button className="primary-button" onClick={primary} type="button">Break the seal <span>→</span></button><button className="text-button" onClick={() => setMethodOpen(true)} type="button">See the modeled odds</button></div><div className="kit-contents"><span><strong>01</strong> Promo</span><span><strong>15</strong> Seeded cards</span><span><strong>05</strong> Boosters</span><span><strong>25</strong> Card deck</span></div></div>
+          <div className="intro-copy"><p className="eyebrow">Vendetta · Pre-Rift</p><h1>Crack the kit.<br /><em>Build what survives.</em></h1><p>One random champion path. Five independently randomized boosters. Then a legal 25-card deck forged from exactly what you opened.</p><div className="intro-actions"><button className="primary-button" onClick={primary} type="button">Break the seal <span>→</span></button><button className="text-button" onClick={() => setMethodOpen(true)} type="button">See the modeled odds</button></div><div className="kit-contents"><span><strong>09</strong> Champions</span><span><strong>15</strong> Seeded cards</span><span><strong>05</strong> Boosters</span><span><strong>25</strong> Card deck</span></div></div>
           <div className="kit-visual" aria-hidden="true"><div className="box-back"><span>Riftbound</span></div><div className="box-front"><i>Pre-Rift</i><strong>Vendetta</strong><small>Sealed kit simulator</small></div><div className="box-card card-one" /><div className="box-card card-two" /></div>
         </section>
       ) : null}
 
-      {phase === "promo" ? (
-        <section className="opening-stage promo-stage">
-          <div className="opening-copy"><p className="eyebrow">Exclusive keepsake</p><h1>The blade remembers.</h1><p>Every kit begins with the stamped Riven promo. Admire it—but keep it out of the sealed deck.</p>{revealed ? <div className="current-card-meta"><span>Not playable</span><h2>Riven · Pre-Rift Promo</h2><p>Exclusive stamped treatment</p></div> : null}</div>
-          <div className="hero-card-slot">{revealed ? <div className="card-reveal"><CardArt card={cardsById.get(session.promo.cardId)!} pull={session.promo} promo onZoom={() => setZoomed({ pull: session.promo, card: cardsById.get(session.promo.cardId)!, promo: true })} /></div> : <FacedownCard label="Exclusive Promo" />}</div>
-          <div className="promo-note"><span>Collector item</span><p>Automatically excluded from Main Deck, Rune Deck, and sideboard counts.</p></div>
-        </section>
-      ) : null}
-
-      {phase === "seeded" ? <OpeningStage kicker="15-card champion pack" title={revealed ? `${session.theme.champion} answers the call.` : "One champion. One direction."} copy={revealed ? session.theme.summary : "Nine possible strategies wait behind the seal. The seeded pack defines the first shape of your pool."} pulls={session.seededPack} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} /> : null}
+      {phase === "seeded" ? <OpeningStage kicker="1 of 9 random champion packs" title={revealed ? `${session.theme.champion} answers the call.` : "Your champion waits."} copy={revealed ? `${session.theme.summary} The complete preset 15-card pack has been added to your sealed pool.` : "Reveal the randomly selected Champion once. Its Legend, Battlefield, and 12 preset support cards are added automatically—no card-by-card review."} pulls={session.seededPack} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} featuredPull={session.seededPack[1]} singleReveal /> : null}
       {phase === "pack" ? <OpeningStage kicker={`Vendetta booster · ${packIndex + 1} of 5`} title={revealed ? stageComplete ? "The rift is spent." : "Turn the next card." : "Gold breaks. Energy spills."} copy={stageComplete ? "Every slot is revealed. The rare, foil, and showcase chances were saved for the final turns." : "Commons lead the way. Rare-or-better and treatment slots wait at the end."} pulls={session.packs[packIndex]} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} /> : null}
       {phase === "pool" ? <PoolView session={session} cardsById={cardsById} onZoom={zoomPull} /> : null}
       {phase === "builder" ? <DeckBuilder key={session.seed} session={session} cards={cards} cardsById={cardsById} onZoom={zoomPull} /> : null}
 
-      {phase !== "intro" && phase !== "builder" ? <div className="action-dock"><span>{phase === "pool" ? "Review the 85 playable/collectible cards from this kit." : "Click, swipe, or press Enter / Space to reveal."}</span><div>{(phase === "seeded" || phase === "pack") && !stageComplete ? <button className="secondary-button" onClick={() => setRevealed(currentPulls.length)} type="button">Reveal all</button> : null}<button className="primary-button" onClick={primary} type="button">{buttonLabel} <span>→</span></button></div></div> : null}
+      {phase !== "intro" && phase !== "builder" ? <div className="action-dock"><span>{phase === "pool" ? "Review the 85 playable/collectible cards from this kit." : phase === "seeded" ? "The Champion is one random result from nine equally modeled packs." : "Each booster is independently randomized; click, swipe, or press Enter / Space."}</span><div>{phase === "pack" && !stageComplete ? <button className="secondary-button" onClick={() => setRevealed(currentPulls.length)} type="button">Reveal all</button> : null}<button className="primary-button" onClick={primary} type="button">{buttonLabel} <span>→</span></button></div></div> : null}
 
       <footer><p>Unofficial, noncommercial fan simulator. Riftbound and all card art are property of Riot Games.</p><div><a href="https://playriftbound.com/en-us/card-gallery/" target="_blank" rel="noreferrer">Official card gallery ↗</a><a href="https://playriftbound.com/en-us/news/announcements/preparing-for-the-vendetta-pre-rift/" target="_blank" rel="noreferrer">Pre-Rift guide ↗</a><a href="https://playriftbound.com/en-us/news/announcements/the-vendetta-overview/" target="_blank" rel="noreferrer">Vendetta overview ↗</a></div></footer>
       {methodOpen ? <Methodology onClose={() => setMethodOpen(false)} updatedAt={sourceUpdatedAt} /> : null}
