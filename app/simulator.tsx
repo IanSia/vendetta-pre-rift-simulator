@@ -556,7 +556,7 @@ export function Simulator({
       {phase === "intro" ? (
         <section className="intro-stage">
           <div className="intro-copy"><p className="eyebrow">Vendetta · Pre-Rift</p><h1>Crack the kit.<br /><em>Build what survives.</em></h1><p>One random champion path. Five independently randomized boosters. Then a legal 25-card deck forged from exactly what you opened.</p><div className="intro-actions"><button className="primary-button" onClick={primary} type="button">Break the seal <span>→</span></button><button className="text-button" onClick={() => setMethodOpen(true)} type="button">See the modeled odds</button></div><div className="kit-contents"><span><strong>09</strong> Champions</span><span><strong>15</strong> Seeded cards</span><span><strong>05</strong> Boosters</span><span><strong>25</strong> Card deck</span></div></div>
-          <div className="kit-visual" aria-hidden="true"><div className="box-back"><span>Riftbound</span></div><div className="box-front"><i>Pre-Rift</i><strong>Vendetta</strong><small>Sealed kit simulator</small></div><div className="box-card card-one" /><div className="box-card card-two" /></div>
+          <div className="kit-visual" aria-hidden="true"><div className="box-back"><span>Riftbound</span></div><div className="box-front"><i>Pre-Rift</i><strong>Vendetta</strong><small>Sealed kit simulator</small></div><div className="box-card card-one" /><div className="box-card card-two" /><Image className="intro-booster" src="/vendetta-booster-pack.webp" alt="" width={765} height={1244} priority /></div>
         </section>
       ) : null}
 
