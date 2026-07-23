@@ -262,7 +262,7 @@ function generateBooster(
     const battlefieldCount = selectedUncommons.filter((selected) =>
       selected.types.includes("battlefield"),
     ).length;
-    if (card.types.includes("battlefield") && battlefieldCount >= 2) continue;
+    if (card.types.includes("battlefield") && battlefieldCount >= 1) continue;
     selectedUncommons.push(card);
     if (selectedUncommons.length === COLLATION_CONFIG.official.uncommon) break;
   }

@@ -81,11 +81,18 @@ test("booster collation prevents impossible Battlefield and Legend clusters", ()
   for (let kitIndex = 0; kitIndex < 100; kitIndex += 1) {
     const kit = generateKit(cards, `collation-guard-${kitIndex}`);
     for (const pack of kit.packs) {
-      const uncommons = pack.filter((pull) => pull.slot === "uncommon");
+      const uncommons = pack.slice(7, 10);
+      assert.ok(
+        uncommons.every((pull) => pull.slot === "uncommon"),
+        "cards 8–10 must be the three uncommon slots",
+      );
       const uncommonBattlefields = uncommons.filter((pull) =>
         cardsById.get(pull.cardId)!.types.includes("battlefield"),
       );
-      assert.ok(uncommonBattlefields.length < 3);
+      assert.ok(
+        uncommonBattlefields.length <= 1,
+        "cards 8–10 may contain at most one Battlefield",
+      );
 
       const premiumCards = pack.filter(
         (pull) =>
