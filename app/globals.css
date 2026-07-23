@@ -127,6 +127,7 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .reveal-gallery { display: grid; grid-template-columns: repeat(5, minmax(52px, 1fr)); gap: clamp(7px, 1vw, 14px); align-content: center; }
 .reveal-gallery .card-art { box-shadow: 0 10px 28px rgba(0,0,0,.4); }
 .reveal-gallery .card-treatment { display: none; }
+.mobile-pack-controls, .mobile-history-panel { display: none; }
 .mini-facedown { aspect-ratio: 744/1039; border: 1px solid rgba(217,184,109,.27); background: linear-gradient(135deg,#111814,#080a09); display: grid; place-items: center; color: rgba(217,184,109,.34); font-family: var(--font-display); }
 .promo-note { border: 1px solid var(--line); padding: 20px; align-self: end; margin-bottom: 6vh; }
 .promo-note span { color: var(--gold); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; }
@@ -235,9 +236,61 @@ footer a { color: #8a8d88; font-size: 8px; text-decoration: none; }.footer a:hov
 }
 
 @media (max-width: 760px) {
+  .phase-intro, .phase-seeded, .phase-pack:not(.pack-complete) { height: 100dvh; overflow: hidden; }
+  .phase-intro footer, .phase-seeded footer, .phase-pack:not(.pack-complete) footer { display: none; }
   .site-header { height: 68px; padding: 0 15px; }.wordmark-rune { width: 31px; height: 31px; }.wordmark > span:last-child { font-size: 11px; }.seed-chip, .site-header nav button:nth-of-type(2) { display: none; }.site-header nav button { padding: 5px; font-size: 10px; }
   .intro-stage { min-height: auto; grid-template-columns: 1fr; padding: 70px 20px 110px; }.intro-copy h1 { font-size: clamp(40px, 12vw, 60px); }.kit-visual { order: -1; height: 310px; margin-bottom: 25px; }.landing-pack { width: 180px; }.box-card { width: 90px; }.intro-booster { left: 70%; width: 125px; }.intro-actions { margin: 28px 0 35px; }.kit-contents { display: grid; grid-template-columns: 1fr 1fr; }
   .opening-stage,.opening-stage.single-reveal { min-height: auto; grid-template-columns: 1fr; padding: 44px 20px 130px; gap: 23px; }.opening-copy { text-align: center; }.opening-copy > p:not(.eyebrow) { margin-inline: auto; }.opening-copy h1 { font-size: 38px; }.current-card-meta { margin-top: 22px; text-align: left; }.hero-card-slot { min-height: 0; }.card-reveal,.facedown-card,.sealed-booster { width: min(75vw, 330px); }.reveal-gallery { grid-column: auto; grid-template-columns: repeat(5, 1fr); }.promo-note { margin: 0; }
+  .phase-intro .intro-stage { height: calc(100dvh - 68px); padding: 14px 20px 18px; gap: 10px; align-content: center; overflow: hidden; }
+  .phase-intro .kit-visual { height: min(27dvh, 220px); margin: 0; }
+  .phase-intro .landing-pack { width: 140px; }
+  .phase-intro .box-card { width: 68px; }
+  .phase-intro .intro-booster { left: 70%; width: 105px; }
+  .phase-intro .intro-copy h1 { font-size: clamp(31px, 9.7vw, 43px); margin-bottom: 12px; }
+  .phase-intro .intro-copy > p:not(.eyebrow) { font-size: 12px; line-height: 1.45; }
+  .phase-intro .intro-actions { margin: 15px 0 18px; }
+  .phase-intro .primary-button { min-height: 46px; }
+  .phase-seeded .opening-stage { height: calc(100dvh - 68px); min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; padding: 16px 16px 106px; gap: 10px; overflow: hidden; }
+  .phase-seeded .opening-copy .eyebrow { margin-bottom: 7px; font-size: 8px; }
+  .phase-seeded .opening-copy h1 { margin-bottom: 8px; font-size: 29px; }
+  .phase-seeded .opening-copy > p:not(.eyebrow) { font-size: 11px; line-height: 1.35; }
+  .phase-seeded .current-card-meta { margin-top: 8px; padding-left: 9px; }
+  .phase-seeded .current-card-meta span { display: none; }
+  .phase-seeded .current-card-meta h2 { margin: 0; font-size: 15px; }
+  .phase-seeded .current-card-meta p { margin-top: 3px; }
+  .phase-seeded .hero-card-slot { height: 100%; }
+  .phase-seeded .card-reveal, .phase-seeded .facedown-card { width: auto; height: min(43dvh, 360px); max-width: 72vw; }
+  .phase-seeded .card-reveal { aspect-ratio: 744 / 1039; }
+  .phase-seeded .card-reveal .card-art, .phase-seeded .card-reveal .card-art img { height: 100%; }
+  .phase-seeded .action-dock { position: fixed; left: 0; right: 0; bottom: 0; }
+  .phase-pack .opening-stage { padding-bottom: 65px; }
+  .phase-pack .reveal-gallery, .phase-pack .action-dock { display: none; }
+  .phase-pack:not(.pack-complete) .opening-stage { height: calc(100dvh - 68px); min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; align-items: stretch; padding: 12px 16px 14px; gap: 10px; overflow: hidden; }
+  .phase-pack:not(.pack-complete) .opening-copy .eyebrow { margin-bottom: 6px; font-size: 8px; }
+  .phase-pack:not(.pack-complete) .opening-copy h1 { margin-bottom: 0; font-size: 28px; }
+  .phase-pack:not(.pack-complete) .opening-copy > p:not(.eyebrow) { display: none; }
+  .phase-pack:not(.pack-complete) .current-card-meta { margin-top: 7px; padding-left: 9px; }
+  .phase-pack:not(.pack-complete) .current-card-meta span { display: none; }
+  .phase-pack:not(.pack-complete) .current-card-meta h2 { margin: 0; font-size: 14px; }
+  .phase-pack:not(.pack-complete) .current-card-meta p { margin-top: 3px; }
+  .phase-pack:not(.pack-complete) .hero-card-slot { height: 100%; }
+  .phase-pack:not(.pack-complete) .card-reveal, .phase-pack:not(.pack-complete) .sealed-booster { width: auto; height: min(48dvh, 400px); max-width: 74vw; }
+  .phase-pack:not(.pack-complete) .card-reveal { aspect-ratio: 744 / 1039; }
+  .phase-pack:not(.pack-complete) .sealed-booster { aspect-ratio: 765 / 1244; }
+  .phase-pack:not(.pack-complete) .card-reveal .card-art, .phase-pack:not(.pack-complete) .card-reveal .card-art img, .phase-pack:not(.pack-complete) .sealed-booster img { height: 100%; }
+  .mobile-pack-controls { display: grid; width: min(100%, 360px); gap: 11px; margin: -5px auto 0; }
+  .mobile-reveal-button { width: 100%; }
+  .mobile-pack-secondary-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+  .mobile-pack-secondary-actions .secondary-button { min-width: 0; }
+  .mobile-pack-secondary-actions .secondary-button:disabled { opacity: .38; cursor: not-allowed; }
+  .mobile-pack-secondary-actions .text-button { white-space: nowrap; }
+  .mobile-history-visible > .card-reveal, .mobile-history-visible > .sealed-booster { display: none; }
+  .mobile-history-panel { width: min(100%, 360px); margin: auto; flex-wrap: wrap; justify-content: center; gap: 6px; align-content: center; }
+  .mobile-history-visible .mobile-history-panel { display: flex; }
+  .mobile-history-panel .card-art { flex: 0 0 calc(20% - 4.8px); box-shadow: 0 8px 20px rgba(0,0,0,.45); }
+  .mobile-history-panel .card-treatment { display: none; }
+  .phase-pack.pack-complete .mobile-history-panel { gap: 9px; padding-top: 8px; }
+  .phase-pack.pack-complete .mobile-history-panel .card-art { flex-basis: calc(33.333% - 6px); }
   .action-dock { min-height: 92px; padding: 11px 15px; }.action-dock > span { display: none; }.action-dock > div { width: 100%; }.action-dock button { flex: 1; padding-inline: 10px; }
   .pool-view,.builder-view { padding: 45px 15px 80px; }.section-heading,.builder-heading { align-items: flex-start; flex-direction: column; }.section-heading h1,.builder-heading h1 { font-size: 37px; }.pool-stats { width: 100%; overflow: auto; }.pool-stats span { flex: 1; }.pool-toolbar { align-items: stretch; flex-direction: column; }.pool-toolbar input { width: 100%; border-left: 0; border-top: 1px solid var(--line); }.pool-grid { grid-template-columns: repeat(4, 1fr); }
   .builder-layout { grid-template-columns: 1fr; }.deck-columns { grid-template-columns: 1fr; }.column-heading > span { display: none; }

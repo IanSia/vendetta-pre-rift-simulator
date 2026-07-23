@@ -251,6 +251,9 @@ function OpeningStage({
   singleReveal = false,
   sealedImage,
   onSealedClick,
+  mobilePrimaryLabel,
+  onMobilePrimary,
+  onMobileRevealAll,
 }: {
   kicker: string;
   title: string;
@@ -263,7 +266,11 @@ function OpeningStage({
   singleReveal?: boolean;
   sealedImage?: string;
   onSealedClick?: () => void;
+  mobilePrimaryLabel?: string;
+  onMobilePrimary?: () => void;
+  onMobileRevealAll?: () => void;
 }) {
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const current = revealed > 0 ? featuredPull || pulls[revealed - 1] : undefined;
   const card = pullCard(current, cardsById);
   return (
@@ -280,7 +287,7 @@ function OpeningStage({
           </div>
         ) : null}
       </div>
-      <div className="hero-card-slot">
+      <div className={`hero-card-slot${mobileHistoryOpen ? " mobile-history-visible" : ""}`}>
         {card && current ? (
           <div className="card-reveal" key={current.uid}>
             <CardArt card={card} pull={current} onZoom={() => onZoom(current)} />
@@ -302,7 +309,36 @@ function OpeningStage({
             <span>Click to tear open</span>
           </button>
         ) : <FacedownCard label={kicker} />}
+        {mobileHistoryOpen && revealed > 0 ? (
+          <div className="mobile-history-panel" id="mobile-opened-cards">
+            {pulls.slice(0, revealed).map((pull) => (
+              <CardArt key={pull.uid} card={cardsById.get(pull.cardId)!} pull={pull} compact onZoom={() => onZoom(pull)} />
+            ))}
+          </div>
+        ) : null}
       </div>
+      {onMobilePrimary && mobilePrimaryLabel ? (
+        <div className="mobile-pack-controls">
+          <button className="primary-button mobile-reveal-button" onClick={onMobilePrimary} type="button">
+            {mobilePrimaryLabel} <span>→</span>
+          </button>
+          <div className="mobile-pack-secondary-actions">
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={revealed === 0}
+              aria-expanded={mobileHistoryOpen}
+              aria-controls="mobile-opened-cards"
+              onClick={() => setMobileHistoryOpen((open) => !open)}
+            >
+              {mobileHistoryOpen ? "Show current card" : `Opened so far · ${revealed}`}
+            </button>
+            {revealed < pulls.length && onMobileRevealAll ? (
+              <button className="text-button" type="button" onClick={onMobileRevealAll}>Reveal all</button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {!singleReveal ? <RevealGallery pulls={pulls} revealed={revealed} cardsById={cardsById} onZoom={onZoom} /> : null}
     </section>
   );
@@ -541,9 +577,15 @@ export function Simulator({
   const stageComplete = (phase === "seeded" || phase === "pack") && revealed === currentPulls.length;
   const buttonLabel = phase === "intro" ? "Break the seal" : phase === "seeded" ? stageComplete ? "Start booster one" : "Reveal random champion" : phase === "pack" ? stageComplete ? packIndex < 4 ? `Open booster ${packIndex + 2}` : "Review sealed pool" : `Reveal card ${revealed + 1}` : phase === "pool" ? "Forge my 25-card deck" : "";
 
+  useEffect(() => {
+    if (phase === "intro" || phase === "seeded" || (phase === "pack" && !stageComplete)) {
+      window.scrollTo(0, 0);
+    }
+  }, [packIndex, phase, stageComplete]);
+
   return (
     <main
-      className={`app-shell phase-${phase}`}
+      className={`app-shell phase-${phase}${phase === "pack" && stageComplete ? " pack-complete" : ""}`}
       onPointerDown={(event) => { pointerStart.current = event.clientX; }}
       onPointerUp={(event) => { if (pointerStart.current !== null && Math.abs(event.clientX - pointerStart.current) > 55 && phase !== "builder") primary(); pointerStart.current = null; }}
     >
@@ -567,7 +609,7 @@ export function Simulator({
       ) : null}
 
       {phase === "seeded" ? <OpeningStage kicker="1 of 9 random champion packs" title={revealed ? `${session.theme.champion} answers the call.` : "Your champion waits."} copy={revealed ? `${session.theme.summary} The complete preset 15-card pack has been added to your sealed pool.` : "Reveal the randomly selected Champion once. Its Legend, Battlefield, and 12 preset support cards are added automatically—no card-by-card review."} pulls={session.seededPack} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} featuredPull={session.seededPack[1]} singleReveal /> : null}
-      {phase === "pack" ? <OpeningStage kicker={`Vendetta booster · ${packIndex + 1} of 5`} title={revealed ? stageComplete ? "The rift is spent." : "Turn the next card." : "Tear into Vendetta."} copy={stageComplete ? "Every slot is revealed. The rare, foil, and showcase chances were saved for the final turns." : "Open the real Akali booster, then reveal its randomized cards one by one."} pulls={session.packs[packIndex]} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} sealedImage="/vendetta-booster-pack.webp" onSealedClick={primary} /> : null}
+      {phase === "pack" ? <OpeningStage key={`${session.seed}-pack-${packIndex}`} kicker={`Vendetta booster · ${packIndex + 1} of 5`} title={revealed ? stageComplete ? "The rift is spent." : "Turn the next card." : "Tear into Vendetta."} copy={stageComplete ? "Every slot is revealed. The rare, foil, and showcase chances were saved for the final turns." : "Open the real Akali booster, then reveal its randomized cards one by one."} pulls={session.packs[packIndex]} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} sealedImage="/vendetta-booster-pack.webp" onSealedClick={primary} mobilePrimaryLabel={buttonLabel} onMobilePrimary={primary} onMobileRevealAll={() => setRevealed(currentPulls.length)} /> : null}
       {phase === "pool" ? <PoolView session={session} cardsById={cardsById} onZoom={zoomPull} /> : null}
       {phase === "builder" ? <DeckBuilder key={session.seed} session={session} cards={cards} cardsById={cardsById} onZoom={zoomPull} /> : null}
 
