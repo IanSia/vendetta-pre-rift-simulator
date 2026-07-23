@@ -485,7 +485,7 @@ export function Simulator({
   }, [seed]);
 
   const primary = useCallback(() => {
-    if (phase === "intro") { setPhase("seeded"); setRevealed(0); return; }
+    if (phase === "intro") { setSeed(randomSeed()); setPhase("seeded"); setPackIndex(0); setRevealed(0); return; }
     if (phase === "seeded") { if (!revealed) setRevealed(session.seededPack.length); else { setPhase("pack"); setPackIndex(0); setRevealed(0); } return; }
     if (phase === "pack") { const pulls = session.packs[packIndex]; if (revealed < pulls.length) setRevealed((value) => value + 1); else if (packIndex < 4) { setPackIndex((value) => value + 1); setRevealed(0); } else { setPhase("pool"); setRevealed(0); } return; }
     if (phase === "pool") setPhase("builder");
