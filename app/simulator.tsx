@@ -188,6 +188,7 @@ function Methodology({ onClose, updatedAt }: { onClose: () => void; updatedAt: s
               <li>That targets about a 25% pack chance for an Epic, 2 alternates per display, and 1 overnumber per 3 displays.</li>
               <li>Signature treatment is modeled on 10% of overnumbers; eligible cards are uniform within treatment pools.</li>
               <li>The final foil plus two rare-or-better cards contain at most one Legend and at most one Epic or showcase treatment.</li>
+              <li>Card 11 is foil Common/Uncommon/Rare, card 12 is a guaranteed base Rare, card 13 becomes a guaranteed base Epic when the foil is Rare, and the token/Rune card is last.</li>
               <li>The nine champion packs are equally likely. Their unpublished support cards are seeded from on-domain curve and theme synergy.</li>
             </ul>
           </article>

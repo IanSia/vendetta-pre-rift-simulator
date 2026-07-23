@@ -268,14 +268,10 @@ function generateBooster(
   }
   selectedUncommons.forEach((card) => add(card, "uncommon"));
 
-  const tokenPool = cards.filter(
-    (card) => card.treatment === "rune" || card.treatment === "token",
-  );
-  add(random.pick(tokenPool), "token-or-rune");
-
   const foilPool = cards.filter(
     (card) =>
       card.treatment === "base" &&
+      ["common", "uncommon", "rare"].includes(card.rarity) &&
       !usedMechanicalIds.has(card.mechanicalId),
   );
   const foil = random.pick(foilPool);
@@ -283,7 +279,28 @@ function generateBooster(
   let premiumLegendPulled = foil.types.includes("legend");
   let epicOrAbovePulled = isEpicOrAbove(foil);
 
-  for (let slot = 0; slot < COLLATION_CONFIG.official.rareOrBetter; slot += 1) {
+  const guaranteedRarePool = cards.filter(
+    (card) =>
+      card.treatment === "base" &&
+      card.rarity === "rare" &&
+      (!premiumLegendPulled || !card.types.includes("legend")) &&
+      !usedMechanicalIds.has(card.mechanicalId),
+  );
+  const guaranteedRare = random.pick(guaranteedRarePool);
+  add(guaranteedRare, "rare-or-better-1");
+  premiumLegendPulled ||= guaranteedRare.types.includes("legend");
+
+  if (foil.rarity === "rare") {
+    const guaranteedEpicPool = cards.filter(
+      (card) =>
+        card.treatment === "base" &&
+        card.rarity === "epic" &&
+        (!premiumLegendPulled || !card.types.includes("legend")) &&
+        !usedMechanicalIds.has(card.mechanicalId),
+    );
+    const guaranteedEpic = random.pick(guaranteedEpicPool);
+    add(guaranteedEpic, "rare-or-better-2");
+  } else {
     const result = rareSlot(
       random,
       cards,
@@ -291,12 +308,17 @@ function generateBooster(
       premiumLegendPulled,
       epicOrAbovePulled,
     );
-    add(result.card, `rare-or-better-${slot + 1}`, {
+    add(result.card, "rare-or-better-2", {
       signed: result.signed,
     });
     premiumLegendPulled ||= result.card.types.includes("legend");
     epicOrAbovePulled ||= isEpicOrAbove(result.card);
   }
+
+  const tokenPool = cards.filter(
+    (card) => card.treatment === "rune" || card.treatment === "token",
+  );
+  add(random.pick(tokenPool), "token-or-rune");
   return pulls;
 }
 

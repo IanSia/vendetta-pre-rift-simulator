@@ -51,6 +51,21 @@ test("kit and booster slot counts match official collation", () => {
     assert.equal(pack.filter((pull) => pull.slot.startsWith("rare-or-better")).length, 2);
     assert.equal(pack.filter((pull) => pull.slot === "foil").length, 1);
     assert.equal(pack.filter((pull) => pull.slot === "token-or-rune").length, 1);
+    assert.equal(pack[10].slot, "foil");
+    assert.ok(
+      ["common", "uncommon", "rare"].includes(
+        cardsById.get(pack[10].cardId)!.rarity,
+      ),
+    );
+    assert.equal(pack[11].slot, "rare-or-better-1");
+    assert.equal(cardsById.get(pack[11].cardId)!.rarity, "rare");
+    assert.equal(cardsById.get(pack[11].cardId)!.treatment, "base");
+    assert.equal(pack[12].slot, "rare-or-better-2");
+    if (cardsById.get(pack[10].cardId)!.rarity === "rare") {
+      assert.equal(cardsById.get(pack[12].cardId)!.rarity, "epic");
+      assert.equal(cardsById.get(pack[12].cardId)!.treatment, "base");
+    }
+    assert.equal(pack[13].slot, "token-or-rune");
     const mechanicalIds = pack.map(
       (pull) => cardsById.get(pull.cardId)!.mechanicalId,
     );
