@@ -62,6 +62,28 @@ test("kit and booster slot counts match official collation", () => {
   }
 });
 
+test("booster collation prevents impossible Battlefield and Legend clusters", () => {
+  for (let kitIndex = 0; kitIndex < 100; kitIndex += 1) {
+    const kit = generateKit(cards, `collation-guard-${kitIndex}`);
+    for (const pack of kit.packs) {
+      const uncommons = pack.filter((pull) => pull.slot === "uncommon");
+      const uncommonBattlefields = uncommons.filter((pull) =>
+        cardsById.get(pull.cardId)!.types.includes("battlefield"),
+      );
+      assert.ok(uncommonBattlefields.length < 3);
+
+      const premiumCards = pack.filter(
+        (pull) =>
+          pull.slot === "foil" || pull.slot.startsWith("rare-or-better"),
+      );
+      const premiumLegends = premiumCards.filter((pull) =>
+        cardsById.get(pull.cardId)!.types.includes("legend"),
+      );
+      assert.ok(premiumLegends.length <= 1);
+    }
+  }
+});
+
 test("nine champion packs remain reachable and structurally valid", () => {
   const seen = new Set<string>();
   const presetByTheme = new Map<string, string[]>();

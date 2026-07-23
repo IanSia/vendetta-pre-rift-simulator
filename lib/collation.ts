@@ -178,6 +178,7 @@ function rareSlot(
   random: RandomSource,
   cards: CardDefinition[],
   excludedMechanicalIds: ReadonlySet<string>,
+  excludeLegends: boolean,
 ) {
   const treatment = rollRareSlotTreatment(random);
   const pool =
@@ -185,18 +186,21 @@ function rareSlot(
       ? cards.filter(
           (card) =>
             (card.treatment === "alt" || card.treatment === "special-alt") &&
+            (!excludeLegends || !card.types.includes("legend")) &&
             !excludedMechanicalIds.has(card.mechanicalId),
         )
       : treatment === "overnumber"
         ? cards.filter(
             (card) =>
               card.treatment === "overnumber" &&
+              (!excludeLegends || !card.types.includes("legend")) &&
               !excludedMechanicalIds.has(card.mechanicalId),
           )
         : cards.filter(
             (card) =>
               card.treatment === "base" &&
               card.rarity === treatment &&
+              (!excludeLegends || !card.types.includes("legend")) &&
               !excludedMechanicalIds.has(card.mechanicalId),
           );
   return {
@@ -243,10 +247,16 @@ function generateBooster(
     .shuffle(commonPool)
     .slice(0, COLLATION_CONFIG.official.common)
     .forEach((card) => add(card, "common"));
-  random
-    .shuffle(uncommonPool)
-    .slice(0, COLLATION_CONFIG.official.uncommon)
-    .forEach((card) => add(card, "uncommon"));
+  const selectedUncommons: CardDefinition[] = [];
+  for (const card of random.shuffle(uncommonPool)) {
+    const battlefieldCount = selectedUncommons.filter((selected) =>
+      selected.types.includes("battlefield"),
+    ).length;
+    if (card.types.includes("battlefield") && battlefieldCount >= 2) continue;
+    selectedUncommons.push(card);
+    if (selectedUncommons.length === COLLATION_CONFIG.official.uncommon) break;
+  }
+  selectedUncommons.forEach((card) => add(card, "uncommon"));
 
   const tokenPool = cards.filter(
     (card) => card.treatment === "rune" || card.treatment === "token",
@@ -258,13 +268,21 @@ function generateBooster(
       card.treatment === "base" &&
       !usedMechanicalIds.has(card.mechanicalId),
   );
-  add(random.pick(foilPool), "foil", { foil: true });
+  const foil = random.pick(foilPool);
+  add(foil, "foil", { foil: true });
+  let premiumLegendPulled = foil.types.includes("legend");
 
   for (let slot = 0; slot < COLLATION_CONFIG.official.rareOrBetter; slot += 1) {
-    const result = rareSlot(random, cards, usedMechanicalIds);
+    const result = rareSlot(
+      random,
+      cards,
+      usedMechanicalIds,
+      premiumLegendPulled,
+    );
     add(result.card, `rare-or-better-${slot + 1}`, {
       signed: result.signed,
     });
+    premiumLegendPulled ||= result.card.types.includes("legend");
   }
   return pulls;
 }
