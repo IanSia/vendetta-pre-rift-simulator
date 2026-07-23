@@ -26,6 +26,8 @@ npm run sync:cards
 
 The sync script pins the official Vendetta gallery records and downloads 744px Riot-hosted WebP images to `public/cards`. The simulation clearly separates official slot structure from estimated rarity/treatment rates and estimated mini-precon support cards.
 
+The sealed booster shown during opening is a locally optimized crop of Riot's official 3600px Vendetta product render. Its pinned source URL is recorded in `data/source-metadata.json`.
+
 ## Deploy
 
 Import this repository into Vercel. It uses the standard Next.js App Router and needs no database or environment variables.

@@ -248,6 +248,8 @@ function OpeningStage({
   onZoom,
   featuredPull,
   singleReveal = false,
+  sealedImage,
+  onSealedClick,
 }: {
   kicker: string;
   title: string;
@@ -258,6 +260,8 @@ function OpeningStage({
   onZoom: (pull: CardPull) => void;
   featuredPull?: CardPull;
   singleReveal?: boolean;
+  sealedImage?: string;
+  onSealedClick?: () => void;
 }) {
   const current = revealed > 0 ? featuredPull || pulls[revealed - 1] : undefined;
   const card = pullCard(current, cardsById);
@@ -280,6 +284,22 @@ function OpeningStage({
           <div className="card-reveal" key={current.uid}>
             <CardArt card={card} pull={current} onZoom={() => onZoom(current)} />
           </div>
+        ) : sealedImage ? (
+          <button
+            className="sealed-booster"
+            type="button"
+            onClick={onSealedClick}
+            aria-label="Open this Vendetta booster"
+          >
+            <Image
+              src={sealedImage}
+              alt="Riftbound Vendetta 14-card booster pack featuring Akali"
+              width={765}
+              height={1244}
+              priority
+            />
+            <span>Click to tear open</span>
+          </button>
         ) : <FacedownCard label={kicker} />}
       </div>
       {!singleReveal ? <RevealGallery pulls={pulls} revealed={revealed} cardsById={cardsById} onZoom={onZoom} /> : null}
@@ -541,7 +561,7 @@ export function Simulator({
       ) : null}
 
       {phase === "seeded" ? <OpeningStage kicker="1 of 9 random champion packs" title={revealed ? `${session.theme.champion} answers the call.` : "Your champion waits."} copy={revealed ? `${session.theme.summary} The complete preset 15-card pack has been added to your sealed pool.` : "Reveal the randomly selected Champion once. Its Legend, Battlefield, and 12 preset support cards are added automatically—no card-by-card review."} pulls={session.seededPack} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} featuredPull={session.seededPack[1]} singleReveal /> : null}
-      {phase === "pack" ? <OpeningStage kicker={`Vendetta booster · ${packIndex + 1} of 5`} title={revealed ? stageComplete ? "The rift is spent." : "Turn the next card." : "Gold breaks. Energy spills."} copy={stageComplete ? "Every slot is revealed. The rare, foil, and showcase chances were saved for the final turns." : "Commons lead the way. Rare-or-better and treatment slots wait at the end."} pulls={session.packs[packIndex]} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} /> : null}
+      {phase === "pack" ? <OpeningStage kicker={`Vendetta booster · ${packIndex + 1} of 5`} title={revealed ? stageComplete ? "The rift is spent." : "Turn the next card." : "Tear into Vendetta."} copy={stageComplete ? "Every slot is revealed. The rare, foil, and showcase chances were saved for the final turns." : "Open the real Akali booster, then reveal its randomized cards one by one."} pulls={session.packs[packIndex]} revealed={revealed} cardsById={cardsById} onZoom={zoomPull} sealedImage="/vendetta-booster-pack.webp" onSealedClick={primary} /> : null}
       {phase === "pool" ? <PoolView session={session} cardsById={cardsById} onZoom={zoomPull} /> : null}
       {phase === "builder" ? <DeckBuilder key={session.seed} session={session} cards={cards} cardsById={cardsById} onZoom={zoomPull} /> : null}
 
