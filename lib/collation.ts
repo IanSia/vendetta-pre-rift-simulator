@@ -179,8 +179,11 @@ function rareSlot(
   cards: CardDefinition[],
   excludedMechanicalIds: ReadonlySet<string>,
   excludeLegends: boolean,
+  excludeEpicOrAbove: boolean,
 ) {
-  const treatment = rollRareSlotTreatment(random);
+  const treatment = excludeEpicOrAbove
+    ? "rare"
+    : rollRareSlotTreatment(random);
   const pool =
     treatment === "alt"
       ? cards.filter(
@@ -210,6 +213,13 @@ function rareSlot(
       random.next() < COLLATION_CONFIG.estimatedSignedOvernumberRate,
     treatment,
   };
+}
+
+function isEpicOrAbove(card: CardDefinition) {
+  return (
+    card.rarity === "epic" ||
+    ["alt", "special-alt", "overnumber"].includes(card.treatment)
+  );
 }
 
 function generateBooster(
@@ -271,6 +281,7 @@ function generateBooster(
   const foil = random.pick(foilPool);
   add(foil, "foil", { foil: true });
   let premiumLegendPulled = foil.types.includes("legend");
+  let epicOrAbovePulled = isEpicOrAbove(foil);
 
   for (let slot = 0; slot < COLLATION_CONFIG.official.rareOrBetter; slot += 1) {
     const result = rareSlot(
@@ -278,11 +289,13 @@ function generateBooster(
       cards,
       usedMechanicalIds,
       premiumLegendPulled,
+      epicOrAbovePulled,
     );
     add(result.card, `rare-or-better-${slot + 1}`, {
       signed: result.signed,
     });
     premiumLegendPulled ||= result.card.types.includes("legend");
+    epicOrAbovePulled ||= isEpicOrAbove(result.card);
   }
   return pulls;
 }

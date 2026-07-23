@@ -80,6 +80,15 @@ test("booster collation prevents impossible Battlefield and Legend clusters", ()
         cardsById.get(pull.cardId)!.types.includes("legend"),
       );
       assert.ok(premiumLegends.length <= 1);
+
+      const epicOrAbove = premiumCards.filter((pull) => {
+        const card = cardsById.get(pull.cardId)!;
+        return (
+          card.rarity === "epic" ||
+          ["alt", "special-alt", "overnumber"].includes(card.treatment)
+        );
+      });
+      assert.ok(epicOrAbove.length <= 1);
     }
   }
 });
